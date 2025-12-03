@@ -9,18 +9,18 @@ services:
       - mongodb
     environment:
       - MONGO_URI=mongodb://mongodb:27017/personalAI
+      - OLLAMA_HOST=http://host.docker.internal:11434
 
-  flask-service:
-    build:
-      context: .
-      dockerfile: Dockerfile.flask
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
     ports:
-      - "5001:5000"
-    depends_on:
-      - fastapi-service
-      - mongodb
+      - "3000:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - open-webui:/app/backend/data
     environment:
-      - FASTAPI_URL=http://fastapi-service:8000
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
 
   mongodb:
     image: mongo:latest
@@ -32,3 +32,4 @@ services:
 
 volumes:
   mongo_data:
+  open-webui:

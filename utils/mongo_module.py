@@ -1,6 +1,7 @@
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import json
+import os
 
 def create_mongo_client(uri: str):
     """
@@ -172,17 +173,34 @@ def read_config(file_path: str):
 
 def mongo_creds_from_config():
     """
-    Extracts MongoDB credentials from a configuration dictionary.
+    Extracts MongoDB credentials from environment variables or configuration dictionary.
     :return: MongoDB connection string
     """
     try:
-        conf_dict = read_config("./config.json")
-        mongo_cred = conf_dict['mongodb']
-        usrname = mongo_cred['mongo_usrname']
-        pwd = mongo_cred['mongo_pwd']
-        cluster = mongo_cred['cluster_name']
-        uri = f"mongodb+srv://{usrname}:{pwd}@personalai.cj4s7.mongodb.net/?retryWrites=true&w=majority&appName={cluster}"
-        return uri
+        # First check for environment variable (Docker usage)
+        env_uri = os.getenv("MONGO_URI")
+        if env_uri:
+            return env_uri
+
+        # Fallback to config file (Local usage)
+        if os.path.exists("./config.json"):
+            conf_dict = read_config("./config.json")
+            if 'mongodb' in conf_dict and 'mongo_uri' in conf_dict['mongodb']:
+                 return conf_dict['mongodb']['mongo_uri']
+            
+            # Legacy support (optional, or just remove)
+            # mongo_cred = conf_dict['mongodb']
+            # usrname = mongo_cred['mongo_usrname']
+            # pwd = mongo_cred['mongo_pwd']
+            # cluster = mongo_cred['cluster_name']
+            # uri = f"mongodb+srv://{usrname}:{pwd}@{cluster}.mongodb.net/?retryWrites=true&w=majority"
+            # return uri
+            
+            print("Config file found but missing 'mongo_uri'.")
+            return None
+        
+        print("No MongoDB configuration found (MONGO_URI env var or config.json).")
+        return None
     except Exception as e:
         print(f"Error extracting MongoDB credentials: {e}")
         return None

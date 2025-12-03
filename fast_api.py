@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import ollama
+import os
 import nest_asyncio
 import uvicorn
 from datetime import datetime
@@ -41,7 +42,9 @@ def generate(request: ChatRequest):
     messages = [system_prompt] + chat_history
 
     # Call the LLM model
-    response = ollama.chat(model="llama3.2:1b", messages=messages)
+    ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+    client_ollama = ollama.Client(host=ollama_host)
+    response = client_ollama.chat(model="llama3.2:1b", messages=messages)
     model_response = response['message']['content']
 
     # Store assistant response with timestamp
