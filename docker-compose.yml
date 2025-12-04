@@ -10,6 +10,7 @@ services:
     environment:
       - MONGO_URI=mongodb://mongodb:27017/personalAI
       - OLLAMA_HOST=http://host.docker.internal:11434
+      - GEMINI_API_KEY=AIzaSyCaB8WsBFAOrWDlG9gMikfglJdSWCP-M7s
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
